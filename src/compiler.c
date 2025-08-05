@@ -52,10 +52,9 @@ char *compile_print_num(compiler_t *compiler)
     ++iota;
     int l3 = iota;
     ++iota;
-    int l4 = iota;
-    ++iota;
-    sprintf(static_buffer, "pop rdi\nmov rbp, rsp\nsub rsp, 32\nmov rax, rdi\ntest rdi, rdi\njne .l%d\nmov word [rsp], 46\nneg rax\nlea rcx,[rsp + 1]\njmp .l%d\n.l%d:\nje .l%d\nmov rcx,rsp\n.l%d:\nmov r8, rcx\nmov esi,10\njmp .l%d\n.l%d:\nmov word [rsp],48\nmov edx, 1\nmov r8, rsp\njmp .l%d\n.l%d:\nmov rdx,rcx\nsub rdx,r8\ntest rax,rax\nje .l%d\ncqo\ndec r8\nidiv rsi\nadd edx, 48\nmov [r8+1],dl\njmp .l%d\n.l%d:\nlea r9,[rdx + 1]\nmov rax, 1\nmov rdi, 1\nmov rsi, r8\nmov rdx, r9\nsyscall\nadd rsp,r9\nmov rsp, rbp\n",
-            l0, l1, l0, l2, l1, l3, l2, l4, l3, l4, l3, l4);
+
+    sprintf(static_buffer, "pop rdi\nmov rbx,0\nlea rcx, [rsp + 128]\nsub rsp, 136\nmov rsi, 0\ncmp rdi, 0\njne .l%d\nmov byte [rcx],'0'\nadd rbx, 1\ndec rcx\njmp .l%d\n.l%d:\ncmp rdi, 0\njg .l%d\nmov rsi, 1\ninc rbx\nneg rdi\n.l%d:\nmov rax, rdi\ncqo\nmov r9,10\nidiv r9\nmov r10,rdx\nadd r10, '0'\ndec rcx\nmov byte [rcx], r10b\ninc rbx\nmov rdi, rax\ncmp rdi, 0\njg .l%d\n.l%d:\ncmp rsi, 1\njne .l%d\ndec rcx\nmov byte [rcx], '-'\n.l%d:\nmov rax, 1\nmov rdi, 1\nmov rsi, rcx\nmov rdx, rbx\nsyscall\nadd rsp, 136\n",
+            l0, l2, l0, l1, l1, l1, l2, l3, l3);
 
     char *to_copy = calloc(strlen(static_buffer) + 1, 1);
     strcpy(to_copy, static_buffer);
@@ -71,7 +70,7 @@ char *compile_ins(compiler_t *compiler)
     {
         compiler->pos++;
         char buffer[1024];
-        sprintf(buffer, "pop rax\npop rcx\ncmp rax, rcx\nmov rbx, 1\nmov rdx, 0\ncmovz rdx, rbx\npush rdx\n", iota, iota);
+        sprintf(buffer, "pop rcx\npop rax\ncmp rax, rcx\nsete al\nmovzx rax, al\npush rax\n", iota, iota);
         char *to_add = calloc(strlen(buffer) + 1, 1);
         strcpy(to_add, buffer);
         return to_add;
@@ -80,7 +79,7 @@ char *compile_ins(compiler_t *compiler)
     {
         compiler->pos++;
         char buffer[1024];
-        sprintf(buffer, "pop rax\npop rcx\ncmp rax, rcx\nmov rbx, 1\nmov rdx, 0\ncmovg rdx, rbx\npush rdx\n", iota, iota);
+        sprintf(buffer, "pop rcx\npop rax\ncmp rax, rcx\nmov rbx, 1\nmov rdx, 0\ncmovg rdx, rbx\npush rdx\n", iota, iota);
         char *to_add = calloc(strlen(buffer) + 1, 1);
         strcpy(to_add, buffer);
         return to_add;
@@ -89,7 +88,7 @@ char *compile_ins(compiler_t *compiler)
     {
         compiler->pos++;
         char buffer[1024];
-        sprintf(buffer, "pop rax\npop rcx\ncmp rax, rcx\nmov rbx, 1\nmov rdx, 0\ncmovl rdx, rbx\npush rdx\n", iota, iota);
+        sprintf(buffer, "pop rcx\npop rax\ncmp rax, rcx\nmov rbx, 1\nmov rdx, 0\ncmovl rdx, rbx\npush rdx\n", iota, iota);
         char *to_add = calloc(strlen(buffer) + 1, 1);
         strcpy(to_add, buffer);
         return to_add;
@@ -143,7 +142,7 @@ char *compile_ins(compiler_t *compiler)
     case SUB:
     {
         compiler->pos++;
-        return "pop qword rax\npop qword rbx\nsub rax, rbx\npush rax\n";
+        return "pop qword rbx\npop qword rax\nsub rax, rbx\npush rax\n";
     }
     case MUL:
     {
@@ -153,7 +152,7 @@ char *compile_ins(compiler_t *compiler)
     case DIV:
     {
         compiler->pos++;
-        return "pop qword rax\npop qword rbx\ndiv rbx\npush rax\n";
+        return "pop qword rbx\npop qword rax\ncqo\nidiv rbx\npush rax\n";
     }
     case CALL:
     {
@@ -192,6 +191,16 @@ char *compile_ins(compiler_t *compiler)
     {
         char *p = compile_print(compiler);
         return p;
+    }
+    case DROP:
+    {
+        compiler->pos++;
+        return "pop rax\n";
+    }
+    case MOD:
+    {
+        compiler->pos++;
+        return "pop rbx\npop rax\nxor rdx, rdx\ndiv rbx\npush rdx\n";
     }
     default:
     {
@@ -361,14 +370,14 @@ void add_string(const char *str, compiler_t *compiler)
     out[out_i] = '\0';
 
     int idx = (int)(compiler->num_strings - 1);
-    size_t need = snprintf(NULL, 0, "string%d:\n db %s\n", idx, out);
+    size_t need = snprintf(NULL, 0, "string%d:\n db %s,0\n", idx, out);
     char *to_add = malloc(need + 1);
     if (!to_add)
     {
         free(out);
         return;
     }
-    snprintf(to_add, need + 1, "string%d:\n db %s\n", idx, out);
+    snprintf(to_add, need + 1, "string%d:\n db %s,0\n", idx, out);
 
     add_asm(to_add, compiler);
 

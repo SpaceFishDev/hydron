@@ -15,7 +15,7 @@ char *opcode_to_string(opcode_type opcode)
     case PUSH:
         return "push";
     case DROP:
-        return "pop";
+        return "drop";
     case ADD:
         return "add";
     case SUB:
@@ -48,6 +48,8 @@ char *opcode_to_string(opcode_type opcode)
         return "print";
     case PRINTNUM:
         return "print_num";
+    case MOD:
+        return "mod";
     default:
         return "unknown";
     }
@@ -237,6 +239,11 @@ instruction_t compile(bytecode_gen_t *gen)
     {
         next;
         return INSTRUCTION(PRINTNUM, {}, 0);
+    }
+    if (!strcmp(current.text, "mod"))
+    {
+        next;
+        return INSTRUCTION(MOD, {}, 0);
     }
 
     error_t err;

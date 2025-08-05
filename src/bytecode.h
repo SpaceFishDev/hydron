@@ -24,6 +24,7 @@ typedef enum
     CALL,
     PRINTNUM,
     PRINT,
+    MOD,
     EXIT,
 } opcode_type;
 

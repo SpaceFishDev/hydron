@@ -43,7 +43,7 @@ token_t lex(lexer_t *lexer)
         lexer->column = c;
         char *buffer = calloc(len + 1, 1);
         char *ptr = buffer;
-        while (current_is_letter)
+        while (current_is_letter || current == '_')
         {
             *ptr = current;
             next;

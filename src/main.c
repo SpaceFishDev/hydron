@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+const int logging = 0;
+
 token_t *lex_all(char *src, int *_num)
 {
     lexer_t lexer;
@@ -55,7 +57,11 @@ int main(int argc, char **argv)
     {
         put_errors(); // will exit if errors exist.
     }
-    printf("%s\n\n\n", input_file);
+    printf("Compiling file '%s'\n", input_file_path);
+    if (logging)
+    {
+        printf("%s\n\n\n", input_file);
+    }
     int num = 0;
     token_t *tokens = lex_all(input_file, &num);
     int i = 0;
@@ -66,7 +72,10 @@ int main(int argc, char **argv)
         {
             break;
         }
-        printf("%s: %d\n", t.text, t.type);
+        if (logging)
+        {
+            printf("%s: %d\n", t.text, t.type);
+        }
         ++i;
     }
     if (error_count())
@@ -77,7 +86,10 @@ int main(int argc, char **argv)
     gen.tokens = tokens;
     gen.pos = 0;
     gen.num_tok = num;
-    printf("\n\n");
+    if (logging)
+    {
+        printf("\n\n");
+    }
 
     instruction_t *instructions = malloc(sizeof(instruction_t));
     uint64_t num_ins = 0;
@@ -88,7 +100,10 @@ int main(int argc, char **argv)
         {
             break;
         }
-        printf("%s: %s\n", opcode_to_string(ins.opcode), ins.num_arg > 0 ? ins.arguments[0].val : "no args");
+        if (logging)
+        {
+            printf("%s: %s\n", opcode_to_string(ins.opcode), ins.num_arg > 0 ? ins.arguments[0].val : "no args");
+        }
         ++num_ins;
         instructions = realloc(instructions, num_ins * sizeof(instruction_t));
         instructions[num_ins - 1] = ins;
@@ -97,9 +112,10 @@ int main(int argc, char **argv)
     {
         put_errors();
     }
-
-    printf("\n\n");
-
+    if (logging)
+    {
+        printf("\n\n");
+    }
     compiler_t compiler;
     compiler.assembly = 0;
     compiler.instructions = instructions;
@@ -112,7 +128,10 @@ int main(int argc, char **argv)
     {
         put_errors();
     }
-    printf("%s\n", compiler.assembly);
+    if (logging)
+    {
+        printf("%s\n", compiler.assembly);
+    }
     char *output_file = get_output(argc, argv);
     char *output_asm = malloc(strlen(output_file) + 5);
     strcpy(output_asm, output_file);
@@ -132,4 +151,5 @@ int main(int argc, char **argv)
     char cmd2[1024];
     sprintf(cmd2, "rm %s %s", output_asm, output_o);
     system(cmd2);
+    printf("File '%s' compiled to '%s'.\n", input_file_path, output_file);
 }
