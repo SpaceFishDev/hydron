@@ -54,7 +54,7 @@ char *compile_print_num(compiler_t *compiler)
     ++iota;
     int l4 = iota;
     ++iota;
-    sprintf(static_buffer, "pop rdi\nmov rax, rdi\ntest rdi, rdi\njne .l%d\nmov word [rsp], 46\nneg rax\nlea rcx,[rsp + 1]\njmp .l%d\n.l%d:\nje .l%d\nmov rcx,rsp\n.l%d:\nmov r8, rcx\nmov esi,10\njmp .l%d\n.l%d:\nmov word [rsp],48\nmov edx, 1\nmov r8, rsp\njmp .l%d\n.l%d:\nmov rdx,rcx\nsub rdx,r8\ntest rax,rax\nje .l%d\ncqo\ndec r8\nidiv rsi\nadd edx, 48\nmov [r8+1],dl\njmp .l%d\n.l%d:\nlea r9,[rdx + 1]\nmov rax, 1\nmov rdi, 1\nmov rsi, r8\nmov rdx, r9\nsyscall\n",
+    sprintf(static_buffer, "pop rdi\nmov rbp, rsp\nsub rsp, 32\nmov rax, rdi\ntest rdi, rdi\njne .l%d\nmov word [rsp], 46\nneg rax\nlea rcx,[rsp + 1]\njmp .l%d\n.l%d:\nje .l%d\nmov rcx,rsp\n.l%d:\nmov r8, rcx\nmov esi,10\njmp .l%d\n.l%d:\nmov word [rsp],48\nmov edx, 1\nmov r8, rsp\njmp .l%d\n.l%d:\nmov rdx,rcx\nsub rdx,r8\ntest rax,rax\nje .l%d\ncqo\ndec r8\nidiv rsi\nadd edx, 48\nmov [r8+1],dl\njmp .l%d\n.l%d:\nlea r9,[rdx + 1]\nmov rax, 1\nmov rdi, 1\nmov rsi, r8\nmov rdx, r9\nsyscall\nadd rsp,r9\nmov rsp, rbp\n",
             l0, l1, l0, l2, l1, l3, l2, l4, l3, l4, l3, l4);
 
     char *to_copy = calloc(strlen(static_buffer) + 1, 1);
@@ -409,6 +409,13 @@ void compile_asm(compiler_t *compiler)
     create_string_table(compiler);
     while (compiler->pos < compiler->num_instruction)
     {
+        char str[128];
+        char *op = opcode_to_string(current.opcode);
+        sprintf(str, "; instruction: %s\n", op);
+        add_asm(str, compiler);
         add_asm(compile_ins(compiler), compiler);
+        memset(str, 0, 128);
+        sprintf(str, "; end of instruction: %s\n", op);
+        add_asm(str, compiler);
     }
 }

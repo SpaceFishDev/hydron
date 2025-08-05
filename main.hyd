@@ -1,8 +1,7 @@
 label main
-push 34
-push 35
-add
+
+push 69
+push 420
 printnum
-push "\n"
-print
+
 exit
