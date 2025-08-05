@@ -1,0 +1,8 @@
+label main
+push 34
+push 35
+add
+printnum
+push "\n"
+print
+exit

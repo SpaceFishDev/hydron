@@ -1,0 +1,11 @@
+{
+    "C_Cpp.errorSquiggles": "enabled",
+    "files.associations": {
+        "stdlib.h": "c",
+        "bytecode.h": "c",
+        "lexer.h": "c",
+        "stdio.h": "c",
+        "string.h": "c",
+        "stdbool.h": "c"
+    }
+}
