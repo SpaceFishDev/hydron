@@ -50,6 +50,28 @@ char *opcode_to_string(opcode_type opcode)
         return "print_num";
     case MOD:
         return "mod";
+    case FOPEN:
+        return "fopen";
+    case FREAD:
+        return "fread";
+    case FWRITE:
+        return "fwrite";
+    case FSEEK:
+        return "fseek";
+    case FTELL:
+        return "ftell";
+    case RESERVE:
+        return "reserve";
+    case SET_PTR:
+        return "set_ptr";
+    case GET_PTR:
+        return "get_ptr";
+    case SWAP:
+        return "swap";
+    case DECL:
+        return "declare";
+    case SET_VAR:
+        return "set_var";
     default:
         return "unknown";
     }
@@ -87,13 +109,7 @@ instruction_t compile(bytecode_gen_t *gen)
     {
         arg_t arg;
         next;
-        if (current.type == WORD)
-        {
-            error_t err = unexpected_token(INTEGER, current);
-            add_error(err);
-            return INSTRUCTION(END, {}, 0);
-        }
-        arg.t = current.type == INTEGER ? INT : STR;
+        arg.t = current.type == INTEGER ? INT : ((current.type == WORD) ? LABEL_NAME : STR);
         arg.val = current.text;
         next;
         return INSTRUCTION(PUSH, {arg}, 1);
@@ -244,6 +260,66 @@ instruction_t compile(bytecode_gen_t *gen)
     {
         next;
         return INSTRUCTION(MOD, {}, 0);
+    }
+    if (!strcmp(current.text, "reserve"))
+    {
+        next;
+        if (current.type != INTEGER)
+        {
+            error_t err = unexpected_token(INTEGER, current);
+            add_error(err);
+            return INSTRUCTION(END, {}, 0);
+        }
+        arg_t arg;
+        arg.t = INT;
+        arg.val = current.text;
+        next;
+        return INSTRUCTION(RESERVE, {arg}, 1);
+    }
+    if (!strcmp(current.text, "get_ptr"))
+    {
+        next;
+        return INSTRUCTION(GET_PTR, {}, 0);
+    }
+    if (!strcmp(current.text, "set_ptr"))
+    {
+        next;
+        return INSTRUCTION(SET_PTR, {}, 0);
+    }
+    if (!strcmp(current.text, "swap"))
+    {
+        next;
+        return INSTRUCTION(SWAP, {}, 0);
+    }
+    if (!strcmp(current.text, "decl"))
+    {
+        next;
+        if (current.type != WORD)
+        {
+            error_t err = unexpected_token(WORD, current);
+            add_error(err);
+            return INSTRUCTION(END, {}, 0);
+        }
+        arg_t arg;
+        arg.t = LABEL_NAME;
+        arg.val = current.text;
+        next;
+        return INSTRUCTION(DECL, {arg}, 1);
+    }
+    if (!strcmp(current.text, "set_var"))
+    {
+        next;
+        if (current.type != WORD)
+        {
+            error_t err = unexpected_token(WORD, current);
+            add_error(err);
+            return INSTRUCTION(END, {}, 0);
+        }
+        arg_t arg;
+        arg.t = LABEL_NAME;
+        arg.val = current.text;
+        next;
+        return INSTRUCTION(SET_VAR, {arg}, 1);
     }
 
     error_t err;

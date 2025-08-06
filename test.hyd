@@ -1,0 +1,4 @@
+label main
+reserve 0 push 8 add get_ptr print
+push 0
+exit 

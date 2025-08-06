@@ -12,6 +12,8 @@ typedef struct
     uint64_t pos;
     char **string_table;
     uint64_t num_strings;
+    char **var_table;
+    uint64_t num_var;
 } compiler_t;
 
 void add_asm(char *assembly, compiler_t *compiler);

@@ -25,6 +25,18 @@ typedef enum
     PRINTNUM,
     PRINT,
     MOD,
+    FOPEN,
+    FREAD,
+    FWRITE,
+    FSEEK,
+    FTELL,
+    RESERVE,
+    SET_PTR,
+    GET_PTR,
+    SWAP,
+    DECL,
+    SET_VAR,
+    GET_VAR,
     EXIT,
 } opcode_type;
 

@@ -18,7 +18,11 @@ void add_asm(char *assembly, compiler_t *compiler)
         return;
     }
     compiler->len += strlen(assembly);
-    compiler->assembly = realloc(compiler->assembly, compiler->len + 1);
+    char *new_buf = calloc(compiler->len + 1, 1);
+    strcpy(new_buf, compiler->assembly);
+    char *old = compiler->assembly;
+    compiler->assembly = new_buf;
+    free(old);
     strcat(compiler->assembly, assembly);
 }
 
@@ -114,10 +118,19 @@ char *compile_ins(compiler_t *compiler)
             compiler->pos++;
             return to_add;
         }
-        else
+        else if (current.arguments[0].t == INT)
         {
             char buffer[1024];
             sprintf(buffer, "push %s\n", current.arguments[0].val);
+            char *to_add = calloc(strlen(buffer) + 1, 1);
+            strcpy(to_add, buffer);
+            compiler->pos++;
+            return to_add;
+        }
+        else
+        {
+            char buffer[1024];
+            sprintf(buffer, "lea rbx, [var_%s]\nmov rax, [rbx]\npush rax\n", current.arguments[0].val);
             char *to_add = calloc(strlen(buffer) + 1, 1);
             strcpy(to_add, buffer);
             compiler->pos++;
@@ -201,6 +214,46 @@ char *compile_ins(compiler_t *compiler)
     {
         compiler->pos++;
         return "pop rbx\npop rax\nxor rdx, rdx\ndiv rbx\npush rdx\n";
+    }
+    case SWAP:
+    {
+        compiler->pos++;
+        return "pop rax\npop rbx\npush rax\npush rbx\n";
+    }
+    case RESERVE:
+    {
+        char *num = current.arguments[0].val;
+        compiler->pos++;
+        char buffer[1024];
+        sprintf(buffer, "sub rsp, %s\nlea rax, [rsp + %s]\npush rax\n", num, num);
+        char *to_add = calloc(strlen(buffer) + 1, 1);
+        strcpy(to_add, buffer);
+        return to_add;
+    }
+    case GET_PTR:
+    {
+        compiler->pos++;
+        return "pop rax\nmov rbx, [rax]\npush rbx\n";
+    }
+    case SET_PTR:
+    {
+        compiler->pos++;
+        return "pop rax\npop rbx\nmov [rbx], rax\n";
+    }
+    case DECL:
+    {
+        compiler->pos++;
+        return "";
+    }
+    case SET_VAR:
+    {
+        char *var = current.arguments[0].val;
+        compiler->pos++;
+        char buffer[1024];
+        sprintf(buffer, "pop rax\nlea rbx, [var_%s]\nmov [rbx], rax\n", var);
+        char *to_add = calloc(strlen(buffer) + 1, 1);
+        strcpy(to_add, buffer);
+        return to_add;
     }
     default:
     {
@@ -385,6 +438,33 @@ void add_string(const char *str, compiler_t *compiler)
     free(out);
 }
 
+void add_var(char *name, compiler_t *compiler)
+{
+    char **new_table = realloc(compiler->var_table, sizeof(char *) * (compiler->num_var + 1));
+    if (!new_table)
+    {
+        return;
+    }
+    compiler->var_table = new_table;
+    char *stored = strdup(name);
+    compiler->var_table[compiler->num_var] = stored;
+    ++compiler->num_var;
+    char buf[1024];
+    sprintf(buf, "var_%s: dq 0\n");
+    add_asm(buf, compiler);
+}
+
+void create_var_table(compiler_t *compiler)
+{
+    for (int i = 0; i < compiler->num_instruction; ++i)
+    {
+        if (compiler->instructions[i].opcode == DECL)
+        {
+            add_var(compiler->instructions[i].arguments[0].val, compiler);
+        }
+    }
+}
+
 void create_string_table(compiler_t *compiler)
 {
     add_asm("bits 64\nglobal main\nsection .data\n", compiler);
@@ -398,6 +478,7 @@ void create_string_table(compiler_t *compiler)
             }
         }
     }
+    create_var_table(compiler);
     add_asm("section .text\n", compiler);
 }
 

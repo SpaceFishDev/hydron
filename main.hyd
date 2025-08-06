@@ -1,53 +1,8 @@
 label main
 
-push 0
-label start
-
-    dup push 1 add
-
-    dup push 15 mod
-    push 0 eq
-    br fizzbuzz_print fizzbuzz_skip
-
-    label fizzbuzz_print
-        push "fizzbuzz"
-        print
-        goto after_print
-
-    label fizzbuzz_skip
-        dup push 3 mod
-        push 0 eq
-        br fizz_check fizz_skip
-
-    label fizz_check
-        dup push 5 mod
-        push 0 eq
-        push 0 eq    ; invert for != 0
-        br fizz_print fizz_skip
-
-    label fizz_print
-        push "fizz"
-        print
-        goto after_print
-
-    label fizz_skip
-        dup push 5 mod
-        push 0 eq
-        br buzz_print print_num
-
-    label buzz_print
-        push "buzz"
-        print
-        goto after_print
-
-    label print_num
-        dup printnum
-
-    label after_print
-        push "\n"
-        print
-    dup push 100 less br start end
-
-label end
+decl a
+push 32
+set_var a
+push a
 
 exit

@@ -123,6 +123,9 @@ int main(int argc, char **argv)
     compiler.pos = 0;
     compiler.len = 0;
     compiler.num_strings = 0;
+    compiler.string_table = 0;
+    compiler.num_var = 0;
+    compiler.var_table = 0;
     compile_asm(&compiler);
     if (error_count())
     {
