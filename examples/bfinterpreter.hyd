@@ -1,0 +1,147 @@
+label main
+decl argc decl argv
+set_var argc
+reserve 0 set_var argv
+
+push argc push 2 less
+br no_args args
+label no_args
+    push "No File Provided.\n" print
+    push 1
+    exit
+label args
+
+decl file_path
+push argv push 8 add get_ptr
+set_var file_path
+
+decl fd
+push file_path push 2 push 0 fopen set_var fd
+
+push fd push 0 push 2 fseek
+
+decl len 
+push fd ftell set_var len
+
+push fd push 0 push 0 fseek
+
+decl buffer 
+push len sreserve set_var buffer
+
+push fd push buffer push len fread
+
+push buffer push len add push 0 set_ptr # null terminate
+
+decl mem
+push 16384
+sreserve
+set_var mem
+
+
+decl loop_mem
+push 16384
+sreserve
+set_var loop_mem
+
+decl loop_pos push 0 set_var loop_pos
+
+decl pos push 0 set_var pos
+decl mem_pos push 0 set_var mem_pos
+decl current push 0 set_var current
+decl mem_current push 0 set_var mem_current
+
+label loop
+
+push buffer push pos add get_byte set_var current
+push mem push mem_pos push 8 mul add set_var mem_current
+
+push current push "+" get_byte eq
+br add check1
+label add
+    push mem_current
+    get_ptr push 1 add
+    push mem_current swap
+    set_ptr
+    goto iter
+
+label check1
+    push current push "-" get_byte eq
+    br sub check2 
+
+label sub
+    push mem_current
+    get_ptr push 1 sub 
+    push mem_current swap
+    set_ptr
+    goto iter
+
+label check2
+    push current push ">" get_byte eq
+    br right check3
+
+label right
+    push mem_pos push 1 add set_var mem_pos
+    goto iter
+
+label check3
+    push current push "<" get_byte eq
+    br left check4
+
+label left
+    push mem_pos push 1 sub set_var mem_pos
+    goto iter
+
+label check4
+    push current push "[" get_byte eq
+    br loop_start check5
+
+label loop_start
+    decl loop_mem_current
+    push loop_mem push loop_pos push 8 mul add set_var loop_mem_current
+    push loop_mem_current push pos push 1 add set_ptr
+    push 1 push loop_pos add set_var loop_pos
+    goto iter
+
+label check5
+    push current push "]" get_byte eq
+    br loop_end check6
+
+label loop_end
+    push mem_current get_byte push 0 eq
+    br loop_stop loop_continue
+
+label loop_continue
+    push loop_mem push loop_pos push 1 sub push 8 mul add set_var loop_mem_current
+    push loop_mem_current get_ptr set_var pos
+    goto check
+
+label loop_stop
+    push loop_pos push 1 sub set_var loop_pos
+    goto iter
+
+label check6
+    push current push "." get_byte eq
+    br dump check7
+
+label dump
+    push mem_current get_byte putc
+    goto iter
+
+label check7
+    push current push "," get_byte eq
+    br read iter
+
+label read
+
+label iter
+
+push pos push 1 add set_var pos
+
+label check
+push pos push len less
+br loop end
+
+label end
+
+
+push 0 exit

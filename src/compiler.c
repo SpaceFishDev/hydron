@@ -170,7 +170,7 @@ char *compile_ins(compiler_t *compiler)
     case CALL:
     {
         char buffer[1024];
-        sprintf(buffer, "call %s\n", current.arguments[0].val);
+        sprintf(buffer, "call %s\npush rax\n", current.arguments[0].val);
         char *to_add = calloc(strlen(buffer) + 1, 1);
         strcpy(to_add, buffer);
         compiler->pos++;
@@ -220,6 +220,11 @@ char *compile_ins(compiler_t *compiler)
         compiler->pos++;
         return "pop rax\npop rbx\npush rax\npush rbx\n";
     }
+    case SRESERVE:
+    {
+        compiler->pos++;
+        return "pop rax\nsub rsp,rax\nmov rcx,rax\nxor rdi,rdi\nmov rdi,rsp\nxor rax,rax\nrep stosb\nmov rbx,rsp\nadd rbx,rcx\npush rbx\n";
+    }
     case RESERVE:
     {
         char *num = current.arguments[0].val;
@@ -229,6 +234,11 @@ char *compile_ins(compiler_t *compiler)
         char *to_add = calloc(strlen(buffer) + 1, 1);
         strcpy(to_add, buffer);
         return to_add;
+    }
+    case PUTC:
+    {
+        compiler->pos++;
+        return "pop rax\nlea rsi, [cbuf]\nmov [rsi], al\nmov rax, 1\nmov rdi, 1\nmov rdx, 1\nsyscall\n";
     }
     case GET_PTR:
     {
@@ -254,6 +264,58 @@ char *compile_ins(compiler_t *compiler)
         char *to_add = calloc(strlen(buffer) + 1, 1);
         strcpy(to_add, buffer);
         return to_add;
+    }
+    case REF_VAR:
+    {
+        char *var = current.arguments[0].val;
+        compiler->pos++;
+        char buffer[1024];
+        sprintf(buffer, "lea rbx, [var_%s]\npush rbx\n", var);
+    }
+    case FOPEN:
+    {
+        compiler->pos++;
+        return "mov rax, 0x02\npop rdx\npop rsi\npop rdi\nsyscall\npush rax\n";
+    }
+    case FCLOSE:
+    {
+        compiler->pos++;
+        return "mov rax, 0x03\npop rdi\nsyscall\n";
+    }
+    case FREAD:
+    {
+        compiler->pos++;
+        return "mov rax, 0x00\npop rdx\npop rsi\npop rdi\nsyscall\npush rax\n";
+    }
+    case FWRITE:
+    {
+        compiler->pos++;
+        return "mov rax, 0x01\npop rdx\npop rsi\npop rdi\nsyscall\npush rax\n";
+    }
+    case FSEEK:
+    {
+        compiler->pos++;
+        return "mov rax, 0x08\npop rdx\npop rsi\npop rdi\nsyscall\npush rax\n";
+    }
+    case FTELL:
+    {
+        compiler->pos++;
+        return "pop rdi\nxor rsi, rsi\nmov rdx,1\nmov rax, 0x08\nsyscall";
+    }
+    case RETURN:
+    {
+        compiler->pos++;
+        return "pop rax\nret\n";
+    }
+    case SET_BYTE:
+    {
+        compiler->pos++;
+        return "pop rbx\npop rcx\nmovzx rax, bl\nmov byte [rcx], al\n";
+    }
+    case GET_BYTE:
+    {
+        compiler->pos++;
+        return "pop rbx\nmovzx rax, byte [rbx]\npush rax\n";
     }
     default:
     {
@@ -467,7 +529,7 @@ void create_var_table(compiler_t *compiler)
 
 void create_string_table(compiler_t *compiler)
 {
-    add_asm("bits 64\nglobal main\nsection .data\n", compiler);
+    add_asm("bits 64\nglobal main\nsection .data\ncbuf: dq 0\n", compiler);
     for (int i = 0; i < compiler->num_instruction; ++i)
     {
         if (compiler->instructions[i].opcode == PUSH)

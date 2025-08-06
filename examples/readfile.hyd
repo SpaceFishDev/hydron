@@ -1,0 +1,42 @@
+label main
+
+decl file_path
+push "test.txt"
+set_var file_path
+
+decl fd
+push file_path
+
+push 2
+push 0
+fopen
+set_var fd
+
+push fd
+push 0
+push 2
+fseek
+
+decl len
+push fd
+ftell 
+set_var len
+
+push fd
+push 0
+push 0
+fseek
+
+decl buffer
+push len
+sreserve
+set_var buffer
+
+push fd
+push buffer
+push len
+fread
+
+push buffer print
+
+exit

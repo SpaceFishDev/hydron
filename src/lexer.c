@@ -34,7 +34,7 @@ token_t lex(lexer_t *lexer)
     {
         uint64_t p = lexer->pos;
         uint64_t c = lexer->column;
-        while (current_is_letter || current == '_')
+        while (current_is_letter || current == '_' || current_is_num)
         {
             next;
         }
@@ -43,7 +43,7 @@ token_t lex(lexer_t *lexer)
         lexer->column = c;
         char *buffer = calloc(len + 1, 1);
         char *ptr = buffer;
-        while (current_is_letter || current == '_')
+        while (current_is_letter || current == '_' || current_is_num)
         {
             *ptr = current;
             next;

@@ -1,0 +1,19 @@
+label main
+
+decl argc decl argv
+decl i # defaults to 0
+set_var argc
+reserve 0 set_var argv
+
+label loop
+
+push argv 
+push i push 8 mul add
+get_ptr print push "\n" print
+push i push 1 add set_var i
+push i push argc eq br end loop
+
+label end
+
+push i
+exit

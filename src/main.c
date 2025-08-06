@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-const int logging = 0;
+const int logging = 1;
 
 token_t *lex_all(char *src, int *_num)
 {

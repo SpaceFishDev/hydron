@@ -1,8 +1,0 @@
-label main
-
-decl a
-push 32
-set_var a
-push a
-
-exit

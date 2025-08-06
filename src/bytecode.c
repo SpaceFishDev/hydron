@@ -72,6 +72,12 @@ char *opcode_to_string(opcode_type opcode)
         return "declare";
     case SET_VAR:
         return "set_var";
+    case REF_VAR:
+        return "ref_var";
+    case SRESERVE:
+        return "sreserve";
+    case SET_BYTE:
+        return "set_byte";
     default:
         return "unknown";
     }
@@ -320,6 +326,66 @@ instruction_t compile(bytecode_gen_t *gen)
         arg.val = current.text;
         next;
         return INSTRUCTION(SET_VAR, {arg}, 1);
+    }
+    if (!strcmp(current.text, "ref_var"))
+    {
+        next;
+        if (current.type != WORD)
+        {
+            error_t err = unexpected_token(WORD, current);
+            add_error(err);
+            return INSTRUCTION(END, {}, 0);
+        }
+        arg_t arg;
+        arg.t = LABEL_NAME;
+        arg.val = current.text;
+        next;
+        return INSTRUCTION(REF_VAR, {arg}, 1);
+    }
+    if (!strcmp(current.text, "sreserve"))
+    {
+        next;
+        return INSTRUCTION(SRESERVE, {}, 0);
+    }
+    if (!strcmp(current.text, "fopen"))
+    {
+        next;
+        return INSTRUCTION(FOPEN, {}, 0);
+    }
+    if (!strcmp(current.text, "fclose"))
+    {
+        next;
+        return INSTRUCTION(FCLOSE, {}, 0);
+    }
+    if (!strcmp(current.text, "fread"))
+    {
+        next;
+        return INSTRUCTION(FREAD, {}, 0);
+    }
+    if (!strcmp(current.text, "fseek"))
+    {
+        next;
+        return INSTRUCTION(FSEEK, {}, 0);
+    }
+    if (!strcmp(current.text, "ftell"))
+    {
+        next;
+        return INSTRUCTION(FTELL, {}, 0);
+    }
+    if (!strcmp(current.text, "putc"))
+    {
+        next;
+        return INSTRUCTION(PUTC, {}, 0);
+    }
+    if (!strcmp(current.text, "get_byte"))
+    {
+        next;
+        return INSTRUCTION(GET_BYTE, {}, 0);
+    }
+    if (!strcmp(current.text, "set_byte"))
+    {
+        next;
+        return INSTRUCTION(SET_BYTE, {}, 0);
     }
 
     error_t err;

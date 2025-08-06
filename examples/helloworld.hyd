@@ -1,0 +1,3 @@
+label main
+    push "Hello, World\n" print
+    push 0 exit
