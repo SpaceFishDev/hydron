@@ -78,6 +78,10 @@ char *opcode_to_string(opcode_type opcode)
         return "sreserve";
     case SET_BYTE:
         return "set_byte";
+    case READC:
+        return "readc";
+    case FUNC:
+        return "function";
     default:
         return "unknown";
     }
@@ -386,6 +390,26 @@ instruction_t compile(bytecode_gen_t *gen)
     {
         next;
         return INSTRUCTION(SET_BYTE, {}, 0);
+    }
+    if (!strcmp(current.text, "readc"))
+    {
+        next;
+        return INSTRUCTION(READC, {}, 0);
+    }
+    if (!strcmp(current.text, "func"))
+    {
+        next;
+        if (current.type != WORD)
+        {
+            error_t err = unexpected_token(WORD, current);
+            add_error(err);
+            return INSTRUCTION(END, {}, 0);
+        }
+        arg_t arg;
+        arg.t = LABEL_NAME;
+        arg.val = current.text;
+        next;
+        return INSTRUCTION(FUNC, {arg}, 1);
     }
 
     error_t err;

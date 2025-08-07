@@ -1,3 +1,5 @@
+# BRAINFUCK INTERPRETER!! It'll work with most programs just if theres too many loops it may break...
+
 label main
 decl argc decl argv
 set_var argc

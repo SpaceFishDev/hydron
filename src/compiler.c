@@ -70,6 +70,16 @@ char *compile_ins(compiler_t *compiler)
 {
     switch (current.opcode)
     {
+    case FUNC:
+    {
+        char buffer[1024];
+        sprintf(buffer, "%s:\npush rbp\nmov rbp, rsp\n", current.arguments[0].val);
+        char *to_add = calloc(strlen(buffer) + 1, 1);
+        strcpy(to_add, buffer);
+        compiler->pos++;
+        return to_add;
+    }
+    break;
     case EQ:
     {
         compiler->pos++;
@@ -305,7 +315,7 @@ char *compile_ins(compiler_t *compiler)
     case RETURN:
     {
         compiler->pos++;
-        return "pop rax\nret\n";
+        return "pop rax\nmov rsp, rbp\npop rbp\nret\n";
     }
     case SET_BYTE:
     {
@@ -316,6 +326,11 @@ char *compile_ins(compiler_t *compiler)
     {
         compiler->pos++;
         return "pop rbx\nmovzx rax, byte [rbx]\npush rax\n";
+    }
+    case READC:
+    {
+        compiler->pos++;
+        return "sub rsp, 8\nmov rax, 0\nmov rdi, 0\nlea rsi, [rsp]\nmov rdx, 1\nsyscall\n";
     }
     default:
     {

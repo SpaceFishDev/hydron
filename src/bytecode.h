@@ -42,6 +42,8 @@ typedef enum
     REF_VAR,
     GET_BYTE,
     SET_BYTE,
+    READC,
+    FUNC,
     EXIT,
 } opcode_type;
 
