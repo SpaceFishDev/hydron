@@ -8,6 +8,7 @@ typedef enum
 {
     END,
     PUSH,
+    BRK,
     DROP,
     ADD,
     SUB,

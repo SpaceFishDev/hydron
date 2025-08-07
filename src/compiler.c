@@ -332,6 +332,11 @@ char *compile_ins(compiler_t *compiler)
         compiler->pos++;
         return "sub rsp, 8\nmov rax, 0\nmov rdi, 0\nlea rsi, [rsp]\nmov rdx, 1\nsyscall\n";
     }
+    case BRK:
+    {
+        compiler->pos++;
+        return "pop rdi\nmov rax, 12\nsyscall\npush rax\n";
+    }
     default:
     {
         error_t err;

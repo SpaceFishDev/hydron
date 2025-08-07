@@ -82,6 +82,8 @@ char *opcode_to_string(opcode_type opcode)
         return "readc";
     case FUNC:
         return "function";
+    case BRK:
+        return "brk";
     default:
         return "unknown";
     }
@@ -410,6 +412,23 @@ instruction_t compile(bytecode_gen_t *gen)
         arg.val = current.text;
         next;
         return INSTRUCTION(FUNC, {arg}, 1);
+    }
+    if (!strcmp(current.text, "include"))
+    {
+        next;
+        if (current.type != STRING)
+        {
+            error_t err = unexpected_token(STRING, current);
+            add_error(err);
+            return INSTRUCTION(END, {}, 0);
+        }
+        next;
+        return compile(gen);
+    }
+    if (!strcmp(current.text, "brk"))
+    {
+        next;
+        return INSTRUCTION(BRK, {}, 0);
     }
 
     error_t err;

@@ -1,4 +1,4 @@
-# BRAINFUCK INTERPRETER!! It'll work with most programs just if theres too many loops it may break...
+# BRAINFUCK INTERPRETER!! It'll work with most programs just if theres too many loops it may break (also memory is quite limited..)
 
 label main
 decl argc decl argv
@@ -134,7 +134,7 @@ label check7
     br read iter
 
 label read
-
+    push mem_current readc set_ptr 
 label iter
 
 push pos push 1 add set_var pos

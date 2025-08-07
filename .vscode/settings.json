@@ -7,6 +7,7 @@
         "stdio.h": "c",
         "string.h": "c",
         "stdbool.h": "c",
-        "utils.h": "c"
+        "utils.h": "c",
+        "compiler.h": "c"
     }
 }

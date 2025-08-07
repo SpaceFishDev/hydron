@@ -1,0 +1,23 @@
+decl current_heap_ptr
+decl size_of_heap
+
+func init_alloc
+    push 0
+    brk
+    set_var current_heap_ptr
+    push 0 
+    set_var size_of_heap
+    push 0
+return
+
+func alloc
+    decl size
+    reserve 0 push 16 add get_ptr set_var size
+    push size push current_heap_ptr add brk
+    push -1 eq br ret_0 continue
+label ret_0
+    push 0 return
+label continue
+    push size push current_heap_ptr add set_var current_heap_ptr
+    push size_of_heap push size add set_var size_of_heap
+    push size push current_heap_ptr sub return
